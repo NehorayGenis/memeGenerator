@@ -14,60 +14,88 @@ var gTxtAreas = [
     },
 ]
 var gFocusedIdx = 0
-
+var gSwitching = false
 function drawImgFromlocal() {
     var meme = getMeme()
     gCanvas = document.querySelector("canvas")
+    var downloadStatus = getDownloadStatus()
 
     gCtx = gCanvas.getContext("2d")
     var img = new Image()
     img.src = `img/${meme.selectedImgId}.jpg`
     img.onload = () => {
         gCtx.drawImage(img, 0, 0, gCanvas.width, gCanvas.height) //img,x,y,xend,yend
-        gCtx.font = `${meme.lines.size} ${meme.lines.font}`
+        if (meme.lines.txt.length === 0) return
+        gCtx.font = `${meme.lines.size}px ${meme.lines.font}`
 
         gCtx.fillStyle = meme.lines.color
-        var centerPoint = gCanvas.width - gCtx.measureText(meme.lines.txt[0]).width
-        centerPoint = centerPoint / 2
-        // checkClickPos({ x: centerPoint, y: 50 })
-        if (meme.lines.txt.length === 0) return
-        gCtx.fillText(meme.lines.txt[0], centerPoint, 50 - gTxtAreas[0].movedPixels)
-        gCtx.strokeText(meme.lines.txt[0], centerPoint, 50 - gTxtAreas[0].movedPixels)
-        gCtx.beginPath()
-        gCtx.rect(5, 10 - gTxtAreas[0].movedPixels, gCanvas.width - 10, 100)
 
-        gCtx.stroke()
-        if (gTxtAreas.length === 2) addText()
-        // if (meme.lines.txt.length === 2) {
-        // addText(meme, centerPoint)
-        // }
+        var i = 0
+        meme.lines.txt.forEach((line) => {
+            var centerPoint = gCanvas.width - gCtx.measureText(meme.lines.txt[i]).width
+            centerPoint = centerPoint / 2
+            var txtHeight = gTxtAreas[i].endY + gTxtAreas[i].startingY
+            txtHeight = txtHeight / 2
+            // txtHeight -= gTxtAreas[i].movedPixels
+            console.log("elemnt:", txtHeight)
+            gCtx.fillText(meme.lines.txt[i], centerPoint, txtHeight)
+            gCtx.strokeText(meme.lines.txt[i], centerPoint, txtHeight)
+            gCtx.beginPath()
+            // console.log("object", i, gTxtAreas[i])
+            if (!downloadStatus) gCtx.rect(gTxtAreas[i].startingX, gTxtAreas[i].startingY, gCanvas.width - 10, 100)
+
+            // printFocus(gTxtAreas[0])
+            gCtx.stroke()
+            i++
+        })
+        if (gSwitching) printFocus(gTxtAreas[gFocusedIdx])
+        gSwitching = false
+    }
+    if (downloadStatus) {
+        downloadCanvas()
     }
 }
+function downloadCanvas() {
+    var canvas = getCanvas()
+    var imgContent = canvas.toDataURL("image/jpeg") // image/jpeg the default format
+    canvas.href = imgContent
+    gDownLoad = false
+}
 
-function addText(idx) {
+function addTextArea(idx = 1) {
     var meme = getMeme()
     var centerPoint = gCanvas.width - gCtx.measureText(meme.lines.txt[idx]).width
+
     centerPoint = centerPoint / 2
     // var idx = meme.lines.txt.length === 0 ? 0 : 1
+    console.log(idx)
     gCtx.fillText(meme.lines.txt[idx], centerPoint, 450 - gTxtAreas[idx].movedPixels)
     gCtx.strokeText(meme.lines.txt[idx], centerPoint, 450 - gTxtAreas[idx].movedPixels)
     gCtx.beginPath()
     gCtx.rect(5, gCanvas.height - 105 - gTxtAreas[idx].movedPixels, gCanvas.width - 10, 100)
     gCtx.stroke()
 }
+function addMidTxt(idx) {
+    var meme = getMeme()
+    var centerPoint = gCanvas.width - gCtx.measureText(meme.lines.txt[idx]).width
 
-function getAreas() {
-    return gTxtAreas
-}
+    centerPoint = centerPoint / 2
+    // var idx = meme.lines.txt.length === 0 ? 0 : 1
+    console.log(idx)
+    gCtx.fillText(meme.lines.txt[idx], centerPoint, gCanvas.height / 2 - gTxtAreas[idx].movedPixels)
+    gCtx.strokeText(meme.lines.txt[idx], centerPoint, gCanvas.height / 2 - gTxtAreas[idx].movedPixels)
+    gCtx.beginPath()
+    var midHeight = gCanvas.height / 2
+    midHeight -= 52
+    midHeight -= gTxtAreas[idx].movedPixels
+    console.log(midHeight)
 
-function getCanvas() {
-    return gCanvas
-}
-function getFocusedIdx() {
-    return gFocusedIdx
+    gCtx.rect(5, midHeight, gCanvas.width - 10, 100)
+    gCtx.stroke()
 }
 
 function checkClickPos(pos) {
+    resetInput()
     gTxtAreas.forEach((area) => {
         if (area.focused) {
             area.focused = false
@@ -99,4 +127,27 @@ function updatePixelsMoved(num) {
     var idx = getFocusedIdx()
     gTxtAreas[idx].movedPixels += num
     drawImgFromlocal()
+}
+function removeArea(idx) {
+    gTxtAreas.splice(idx, 1)
+}
+
+function switchFocus() {
+    var meme = getMeme()
+    gFocusedIdx++
+    if (gFocusedIdx === meme.lines.txt.length) gFocusedIdx = 0
+    gSwitching = true
+    drawImgFromlocal()
+    resetInput()
+}
+
+function getAreas() {
+    return gTxtAreas
+}
+
+function getCanvas() {
+    return gCanvas
+}
+function getFocusedIdx() {
+    return gFocusedIdx
 }

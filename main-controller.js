@@ -1,6 +1,7 @@
 "use strict"
 const gTouchEvs = ["touchstart", "touchmove", "touchend"]
-
+var gLineCounter = 0
+var gDownLoad = false
 function renderGallery() {
     var str = ""
     var elRender = document.querySelector(".renderable")
@@ -25,20 +26,21 @@ function renderMemeEditor(imgId) {
     <section class="meme-editor flex">
     <canvas id="canvas" height="500" width="500" style="border: 1px solid black" ></canvas>
     <section class="edits flex">
-        <input type="text" class="meme-first-text" name="meme-text" placeholder="text"
+        <input type="text" class="meme-text" name="meme-text" placeholder="text"
         onchange   = "setTxt(value,this.classList)"
         onkeypress = "this.onchange()"
         onpaste    = "this.onchange()"
         oninput    = "this.onchange()"/>
         <div class="move-between-lines border">
             <button class="move-up" onclick="moveUp()">⬆</button>
+            <button class="switch" onclick="switchLines()">🔄</button>
             <button class="move-down" onclick="moveDown()">⬇</button>
             <button class="add" onclick="addLine()">➕</button>
             <button class="delete" onclick="deleteLine()">🚮</button>
         </div>
         <section class="text-edits border">
-            <button class="font-size-up">🗚</button>
-            <button class="font-size-down">🗛</button>
+            <button class="font-size-up" onclick="sizeChange(1)">🗚</button>
+            <button class="font-size-down" onclick="sizeChange(-1)">🗛</button>
             <button class="ltl">ltl</button>
             <button class="center-text">☰</button>
             <button class="rtl">rtl</button>
@@ -48,6 +50,13 @@ function renderMemeEditor(imgId) {
             </select>
             <button class="under-line">underline</button>
             <input type="color" id="fontColor" name="fontColor" value="#fdffff" onchange   = "setColor(value)"/>
+        </section>
+        <section class="renderable">
+        <button class="btn" onclick="uploadImg()">
+        Upload Image from Canvas
+      </button>
+            <div class="share-container"></div>
+            <a href="#" class="btn" onclick="downloadImg(this)" download="my-img.jpg">Download as jpeg</a>
         </section>
     </section>
 </section>`
@@ -72,8 +81,8 @@ function addLine() {
     // onpaste    = "this.onchange()"
     // oninput    = "this.onchange()"/>` + elEdits.innerHTML
     // elEdits.innerHTML = str
-
-    addTxt()
+    gLineCounter++
+    addTxt(gLineCounter)
 }
 
 function addListeners() {
@@ -97,6 +106,14 @@ function addTouchListeners() {
     // elCanvas.addEventListener("touchmove", onMove)
     var elCanvas = document.querySelector("canvas")
     elCanvas.addEventListener("touchstart", onDown)
+    // for later use
+    // window.addEventListener('click', function(e){
+    //     if (document.getElementById('clickbox').contains(e.target)){
+    //       // Clicked in box
+    //     } else{
+    //       // Clicked outside the box
+    //     }
+    //   })
     // elCanvas.addEventListener("touchend", onUp)
 }
 function onDown(ev) {
@@ -140,4 +157,25 @@ function moveDown() {
 }
 function deleteLine() {
     removeLine()
+}
+function switchLines() {
+    switchFocus()
+}
+
+function resetInput() {
+    var elInput = document.querySelector(".meme-text")
+    elInput.value = ""
+}
+
+function sizeChange(num) {
+    changeFontSize(num)
+}
+
+function downloadImg(elLink) {
+    gDownLoad = true
+    drawImgFromlocal()
+}
+
+function getDownloadStatus() {
+    return gDownLoad
 }

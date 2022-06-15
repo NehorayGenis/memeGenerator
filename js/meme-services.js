@@ -12,7 +12,7 @@ var gMeme = {
     lines: {
         txt: ["I sometimes eat Falafel"],
         // focusedIdx:-1,
-        size: "20px",
+        size: 20,
         align: "left",
         color: "red",
         font: "Impact",
@@ -30,10 +30,10 @@ function setMemeColor(value) {
     gMeme.lines.color = value
     drawImgFromlocal()
 }
-function addTxt() {
-    console.log(gMeme.lines.txt.length === 0 ? 0 : 1)
-    var idx = gMeme.lines.txt.length === 0 ? 0 : 1
-    gMeme.lines.txt[idx] = "and sometimes i dont"
+function addTxt(idx = gMeme.lines.txt.length === 0 ? 0 : 1) {
+    // console.log(gMeme.lines.txt.length === 0 ? 0 : 1)
+    // var idx = gMeme.lines.txt.length === 0 ? 0 : 1
+    gMeme.lines.txt.push("and sometimes i dont")
     var areas = getAreas()
     var area = {
         startingX: 5,
@@ -44,8 +44,24 @@ function addTxt() {
         focused: false,
         movedPixels: 5,
     }
-    areas.push(area)
-    addText(idx)
+    console.log()
+    if (idx > 1) {
+        area = {
+            startingX: 5,
+            endX: gCanvas.width - 10,
+            startingY: gCanvas.height / 2 - 55,
+            endY: gCanvas.height / 2 + 55,
+            idx,
+            focused: false,
+            movedPixels: 5,
+        }
+        console.log(area)
+        areas.push(area)
+        addMidTxt(idx)
+    } else {
+        areas.push(area)
+        addTextArea(idx)
+    }
 }
 
 function getMeme() {
@@ -56,7 +72,13 @@ function getImgs() {
 }
 
 function removeLine() {
-    var idx = getFocusedIdx
+    var idx = getFocusedIdx()
     gMeme.lines.txt.splice(idx, 1)
+    removeArea(idx)
+    drawImgFromlocal()
+}
+
+function changeFontSize(num) {
+    gMeme.lines.size += num
     drawImgFromlocal()
 }
