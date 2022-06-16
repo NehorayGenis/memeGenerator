@@ -24,7 +24,7 @@ function renderMemeEditor(imgId) {
     var elRender = document.querySelector(".renderable")
     str = `            
     <section class="meme-editor flex">
-    <canvas id="canvas" height="500" width="500" style="border: 1px solid black" ></canvas>
+    <canvas id="canvas" height="500" width="500" style="border: 1px solid black" >Your browser does not support Canvas.</canvas>
     <section class="edits flex">
         <input type="text" class="meme-text" name="meme-text" placeholder="text"
         onchange   = "setTxt(value,this.classList)"
@@ -32,37 +32,58 @@ function renderMemeEditor(imgId) {
         onpaste    = "this.onchange()"
         oninput    = "this.onchange()"/>
         <div class="move-between-lines border">
-            <button class="move-up" onclick="moveUp()">⬆</button>
+            <button class="move-up" onclick="moveLine(1)">⬆</button>
             <button class="switch" onclick="switchLines()">🔄</button>
-            <button class="move-down" onclick="moveDown()">⬇</button>
+            <button class="move-down" onclick="moveLine(-1)">⬇</button>
             <button class="add" onclick="addLine()">➕</button>
             <button class="delete" onclick="deleteLine()">🚮</button>
         </div>
-        <section class="text-edits border">
+        <section class="text-edits flex space-between">
             <button class="font-size-up" onclick="sizeChange(1)">🗚</button>
             <button class="font-size-down" onclick="sizeChange(-1)">🗛</button>
-            <button class="ltl">ltl</button>
+            <button class="ltl">
+            <i class="fa-solid fa-align-left"></i>
+            </button>
             <button class="center-text">☰</button>
             <button class="rtl">rtl</button>
-            <select name="fonts" list="fonts">
+            <div class="text-attr flex">
+            <select name="fonts" list="fonts" class="fonts" onchange=("changeFont(this.value)")>
+                <option value="Impact">Impact</option>
                 <option value="Arial">Arial</option>
                 <option value="comics-sans">comics-sans</option>
             </select>
-            <button class="under-line">underline</button>
+            <button class="under-line">_</button>
             <input type="color" id="fontColor" name="fontColor" value="#fdffff" onchange   = "setColor(value)"/>
+            </div>
         </section>
-        <section class="renderable">
+        <section class="upload-download flex">
         <button class="btn" onclick="uploadImg()">
-        Upload Image from Canvas
+        Upload Image
       </button>
-            <div class="share-container"></div>
-            <a href="#" class="btn" onclick="downloadImg(this)" download="my-img.jpg">Download as jpeg</a>
+            <div class="share-container flex"></div>
+            <a href="#" class="download flex" onclick="downloadImg(this)" download="my-img.jpg">Download</a>
         </section>
     </section>
 </section>`
     elRender.innerHTML = str
     addListeners()
     drawImgFromlocal()
+}
+function generateRandomMeme() {
+    var img = getImgs()
+    var lines = getRanSentences()
+    var randomInt = getRandomInt(1, lines.length)
+    console.log(lines[randomInt])
+    var randomMemeNum = getRandomInt(1, img.length)
+    renderMemeEditor(randomMemeNum)
+    var meme = getMeme()
+    meme.lines.txt[0] = lines[randomInt]
+    var lineCount = getRandomInt(1, 3)
+    if (lineCount === 2) {
+        addLine()
+        randomInt = getRandomInt(1, lines.length)
+        meme.lines.txt[1] = lines[randomInt]
+    }
 }
 function setTxt(value, elClass) {
     setMemeTxt(value, elClass.value)
@@ -149,11 +170,8 @@ function getEvPos(ev) {
     return pos
 }
 
-function moveUp() {
-    updatePixelsMoved(+1)
-}
-function moveDown() {
-    updatePixelsMoved(-1)
+function moveLine(idx) {
+    updatePixelsMoved(idx)
 }
 function deleteLine() {
     removeLine()
@@ -173,9 +191,19 @@ function sizeChange(num) {
 
 function downloadImg(elLink) {
     gDownLoad = true
+
     drawImgFromlocal()
+    var canvas = getCanvas()
+    var imgContent = canvas.toDataURL("image/jpeg") // image/jpeg the default format
+    elLink.href = imgContent
+    setTimeout(() => {
+        gDownLoad = false
+    }, 5000)
 }
 
 function getDownloadStatus() {
     return gDownLoad
+}
+function changeFont(value) {
+    console.log(value)
 }

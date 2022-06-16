@@ -37,23 +37,23 @@ function addTxt(idx = gMeme.lines.txt.length === 0 ? 0 : 1) {
     var areas = getAreas()
     var area = {
         startingX: 5,
-        endX: gCanvas.width - 10,
-        startingY: gCanvas.height - 110,
-        endY: gCanvas.height - 10,
+        endX: gElCanvas.width - 10,
+        startingY: gElCanvas.height - 110,
+        endY: gElCanvas.height - 10,
         idx: 1,
         focused: false,
-        movedPixels: 5,
+        movedPixels: 0,
     }
     console.log()
     if (idx > 1) {
         area = {
             startingX: 5,
-            endX: gCanvas.width - 10,
-            startingY: gCanvas.height / 2 - 55,
-            endY: gCanvas.height / 2 + 55,
+            endX: gElCanvas.width - 10,
+            startingY: gElCanvas.height / 2 - 55,
+            endY: gElCanvas.height / 2 + 55,
             idx,
             focused: false,
-            movedPixels: 5,
+            movedPixels: 0,
         }
         console.log(area)
         areas.push(area)
