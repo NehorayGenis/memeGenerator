@@ -12,20 +12,46 @@
             crossorigin="anonymous"
             referrerpolicy="no-referrer"
         />
-        <link rel="stylesheet" href="css/styles.css" />
+        <link rel="stylesheet" href="css/style.css" />
     </head>
     <!-- onload="renderGallery()" -->
     <body onload="renderGallery()">
-        <header>
-            <div class="flex space-between">
-                <h1 class="logo">logo</h1>
-                <div class="options flex">
-                    <h1 class="gallery" onclick="renderGallery()">gallery</h1>
-                    <h1 class="flexiable" onclick="generateRandomMeme()">i'm flexiable</h1>
-                    <h1 class="about">about</h1>
-                </div>
+        <header class="flex space-between">
+            <h1 class="logo">logo</h1>
+            <div class="options flex">
+                <h1 class="gallery" onclick="renderGallery()">gallery</h1>
+                <h1 class="flexiable" onclick="generateRandomMeme()">i'm flexiable</h1>
+                <h1 class="about">about</h1>
             </div>
         </header>
+        <div class="searches flex">
+            <input
+                type="text"
+                class="search-word"
+                name="search-word"
+                list="search-word"
+                placeholder="funny"
+                onchange="setSearch(value)"
+                onkeypress="this.onchange()"
+                onpaste="this.onchange()"
+                oninput="this.onchange()"
+                autocomplete="off"
+            />
+            <datalist id="search-word">
+                <option>funny</option>
+                <option>cat</option>
+                <option>baby</option>
+                <option>politics</option>
+                <option>crazy</option>
+                <option>weird</option>
+                <option>movie</option>
+                <option>cute</option>
+                <option>shows</option>
+                <option>gestures</option>
+                <option>point</option>
+            </datalist>
+            <div class="spans"></div>
+        </div>
         <section class="renderable"></section>
         <script src="js/util-services.js"></script>
         <script src="js/memesSentences.js"></script>

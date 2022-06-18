@@ -2,22 +2,12 @@
 
 var gElCanvas
 var gCtx
-var gTxtAreas = [
-    {
-        startingX: 5,
-        endX: 490,
-        startingY: 10,
-        endY: 100,
-        idx: 0,
-        focused: false,
-        movedPixels: 0,
-    },
-]
+var gDrag = false
 var gFocusedIdx = 0
 var gSwitching = false
 function drawImgFromlocal() {
     var meme = getMeme()
-    gElCanvas = document.querySelector("canvas")
+    gElCanvas = document.querySelector(".main-canvas")
     var downloadStatus = getDownloadStatus()
 
     gCtx = gElCanvas.getContext("2d")
@@ -25,31 +15,21 @@ function drawImgFromlocal() {
     img.src = `img/${meme.selectedImgId}.jpg`
     img.onload = () => {
         gCtx.drawImage(img, 0, 0, gElCanvas.width, gElCanvas.height) //img,x,y,xend,yend
-        if (meme.lines.txt.length === 0) return
-        gCtx.font = `${meme.lines.size}px ${meme.lines.font}`
+        if (meme.lines.length === 0) return
 
-        gCtx.fillStyle = meme.lines.color
-
-        var i = 0
-        meme.lines.txt.forEach((line) => {
-            var centerPoint = gElCanvas.width - gCtx.measureText(meme.lines.txt[i]).width
+        meme.lines.forEach((line) => {
+            gCtx.font = `${line.size}px ${line.font}`
+            gCtx.fillStyle = line.color
+            var centerPoint = gElCanvas.width - gCtx.measureText(line.txt).width
+            gCtx.lineWidth = 1
+            gCtx.strokeStyle = "#000"
             centerPoint = centerPoint / 2
-            var txtHeight = gTxtAreas[i].endY + gTxtAreas[i].startingY
-            txtHeight = txtHeight / 2
-            // txtHeight -= gTxtAreas[i].movedPixels
-            console.log("elemnt:", txtHeight)
-            gCtx.fillText(meme.lines.txt[i], centerPoint, txtHeight - gTxtAreas[i].movedPixels)
-            gCtx.strokeText(meme.lines.txt[i], centerPoint, txtHeight - gTxtAreas[i].movedPixels)
+            // line.x = gCtx.measureText(line.txt).width
+            gCtx.fillText(line.txt, line.x - gCtx.measureText(line.txt).width / 2, line.y - line.movedPixels)
+            gCtx.strokeText(line.txt, line.x - gCtx.measureText(line.txt).width / 2, line.y - line.movedPixels)
             gCtx.beginPath()
-            // console.log("object", i, gTxtAreas[i])
-            if (!downloadStatus) gCtx.rect(gTxtAreas[i].startingX, gTxtAreas[i].startingY - gTxtAreas[i].movedPixels, gElCanvas.width - 10, 100)
-
-            // printFocus(gTxtAreas[0])
-            gCtx.stroke()
-            i++
         })
-        if (gSwitching) printFocus(gTxtAreas[gFocusedIdx])
-        gSwitching = false
+        printFocus(meme.lines[gFocusedIdx])
     }
 }
 function downloadCanvas() {
@@ -59,70 +39,55 @@ function downloadCanvas() {
     gDownLoad = false
 }
 
-function addTextArea(idx = 1) {
-    var meme = getMeme()
-    var centerPoint = gElCanvas.width - gCtx.measureText(meme.lines.txt[idx]).width
-
-    centerPoint = centerPoint / 2
-    // var idx = meme.lines.txt.length === 0 ? 0 : 1
-    console.log(idx)
-    gCtx.fillText(meme.lines.txt[idx], centerPoint, 450 - gTxtAreas[idx].movedPixels)
-    gCtx.strokeText(meme.lines.txt[idx], centerPoint, 450 - gTxtAreas[idx].movedPixels)
-    gCtx.beginPath()
-    gCtx.rect(5, gElCanvas.height - 105 - gTxtAreas[idx].movedPixels, gElCanvas.width - 10, 100)
-    gCtx.stroke()
-}
-function addMidTxt(idx) {
-    var meme = getMeme()
-    var centerPoint = gElCanvas.width - gCtx.measureText(meme.lines.txt[idx]).width
-
-    centerPoint = centerPoint / 2
-    // var idx = meme.lines.txt.length === 0 ? 0 : 1
-    console.log(idx)
-    gCtx.fillText(meme.lines.txt[idx], centerPoint, gElCanvas.height / 2 - gTxtAreas[idx].movedPixels)
-    gCtx.strokeText(meme.lines.txt[idx], centerPoint, gElCanvas.height / 2 - gTxtAreas[idx].movedPixels)
-    gCtx.beginPath()
-    var midHeight = gElCanvas.height / 2
-    midHeight -= 52
-    midHeight -= gTxtAreas[idx].movedPixels
-    console.log(midHeight)
-
-    gCtx.rect(5, midHeight, gElCanvas.width - 10, 100)
-    gCtx.stroke()
-}
-
 function checkClickPos(pos) {
     resetInput()
-    gTxtAreas.forEach((area) => {
-        if (area.focused) {
-            area.focused = false
-            // clearCanvas()
-            drawImgFromlocal()
+    var meme = getMeme()
+
+    for (var i = 0; i < meme.lines.length; i++) {
+        if (
+            meme.lines[i].x - 5 - gCtx.measureText(meme.lines[i].txt).width / 2 < pos.x &&
+            pos.x < meme.lines[i].x + gCtx.measureText(meme.lines[i].txt).width / 2 &&
+            meme.lines[i].y - meme.lines[i].size < pos.y &&
+            pos.y < meme.lines[i].y + meme.lines[i].size + 5
+        ) {
+            // printFocus(line)
+            gFocusedIdx = i
+            setDrag(true)
+            document.querySelector("canvas").style.cursor = "grabbing"
+
+            break
+        } else {
+            document.querySelector("canvas").style.cursor = "pointer"
+            // if th user clicks outside the text i gonna set the gfocus to be bigger the the zamount of lines in the array and will check on
+            //print img if its the case
+            // if not the ill print the focus area
+            // i tried printing it here but the load time just deleted the highlite
+            gFocusedIdx = meme.lines.length
         }
-        if (pos.x > area.startingX && pos.x < area.endX && pos.y > area.startingY && pos.y < area.endY) {
-            area.focused = true
-            printFocus(area)
-            return
-        }
-    })
+    }
+
+    drawImgFromlocal()
 }
 function clearCanvas() {
     gCtx.clearRect(0, 0, gElCanvas.width, gElCanvas.height)
 }
-function printFocus(area) {
+function printFocus(line) {
+    var meme = getMeme()
+    var idx = gFocusedIdx === 0 ? 0 : 1
+    line = meme.lines[gFocusedIdx]
     gCtx.beginPath()
     gCtx.lineWidth = "6"
     gCtx.strokeStyle = "red"
-    gCtx.rect(area.startingX, area.startingY - area.movedPixels, gElCanvas.width - 10, 100)
+    if (gFocusedIdx >= meme.lines.length) return
+    gCtx.rect(line.x - 5 - gCtx.measureText(line.txt).width / 2, line.y - line.size - line.movedPixels, gCtx.measureText(line.txt).width + 10, line.size + 5)
     gCtx.stroke()
-    gCtx.strokeStyle = "#000"
     gCtx.lineWidth = 1
+    gCtx.strokeStyle = "#000"
     gCtx.setLineDash([])
-    gFocusedIdx = area.idx
 }
 function updatePixelsMoved(num) {
-    var idx = getFocusedIdx()
-    gTxtAreas[idx].movedPixels += num
+    var meme = getMeme()
+    meme.lines[gFocusedIdx].movedPixels += num
     drawImgFromlocal()
 }
 function removeArea(idx) {
@@ -132,7 +97,7 @@ function removeArea(idx) {
 function switchFocus() {
     var meme = getMeme()
     gFocusedIdx++
-    if (gFocusedIdx === meme.lines.txt.length) gFocusedIdx = 0
+    if (gFocusedIdx >= meme.lines.length) gFocusedIdx = 0
     gSwitching = true
     drawImgFromlocal()
     resetInput()
@@ -147,4 +112,46 @@ function getCanvas() {
 }
 function getFocusedIdx() {
     return gFocusedIdx
+}
+// i know in the original q we needed to do it so it'll grow on click
+// but i wanted to do it that
+// takes the keywords and paint them on a canvas
+// sort the most common ones by running on the object and sorting only the count of the words
+// and then takes the 5 most searched words by taking the first 5 elements of the sorted count arr
+// decided it looks better just unsorted
+//decided to deleted it all because it wasnt the q
+function paintKeywords() {
+    var keywords = getKeywords()
+    var keys = Object.keys(keywords)
+    // console.log(sortedKeywordsCount)
+    var displayWords = []
+    var elWords = document.querySelector(".spans")
+    var str = ``
+    for (var i = 0; i <= 11; i++) {
+        str += `<span class="word-${i}" onclick="inlargeText(this) ">${keys[i]}</span>`
+    }
+    str += ``
+    elWords.innerHTML += str
+    for (var i = 0; i <= 11; i++) {
+        var word = document.querySelector(`.word-${i}`)
+        word.style.fontSize = ` ${keywords[keys[i]]}em`
+        displayWords.push(word)
+    }
+}
+
+function setDrag(bool) {
+    console.log(bool)
+    gDrag = bool
+}
+
+function getDrag() {
+    return gDrag
+}
+
+function moveFocused(dx, dy) {
+    var meme = getMeme()
+    console.log(meme.lines[gFocusedIdx].x)
+    meme.lines[gFocusedIdx].x += dx
+    meme.lines[gFocusedIdx].y += dy
+    drawImgFromlocal()
 }

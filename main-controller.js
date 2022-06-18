@@ -2,10 +2,14 @@
 const gTouchEvs = ["touchstart", "touchmove", "touchend"]
 var gLineCounter = 0
 var gDownLoad = false
+var gSearchKey
+var gStartPos
 function renderGallery() {
     var str = ""
     var elRender = document.querySelector(".renderable")
-    var imgs = getImgs()
+    var imgs = getImgs(gSearchKey)
+    var elSearch = document.querySelector(".searches")
+    elSearch.style.display = "flex"
     str = `
     
     <section class="photos">`
@@ -16,15 +20,30 @@ function renderGallery() {
     str += `
     </section>
     `
+    paintKeywords()
+    elRender.innerHTML = str
+}
+function renderPhotos() {
+    var elRender = document.querySelector(".photos")
+
+    var imgs = getImgs()
+    var str = ``
+    imgs.forEach((img) => {
+        str += `<img src="img/${img.id}.jpg" alt="meme no ${img.id}" class="meme" onclick="renderMemeEditor(${img.id})"/>`
+    })
     elRender.innerHTML = str
 }
 function renderMemeEditor(imgId) {
+    var elSearch = document.querySelector(".searches")
+    elSearch.style.display = "none"
+    // var elCanvas = document.querySelector(".search-canvas")
+    // elCanvas.style.display = "none"
     setMeme(imgId)
     var str = ""
     var elRender = document.querySelector(".renderable")
     str = `            
     <section class="meme-editor flex">
-    <canvas id="canvas" height="500" width="500" style="border: 1px solid black" >Your browser does not support Canvas.</canvas>
+    <canvas class="main-canvas" id="canvas" height="500" width="500" style="border: 1px solid black" >Your browser does not support Canvas.</canvas>
     <section class="edits flex">
         <input type="text" class="meme-text" name="meme-text" placeholder="text"
         onchange   = "setTxt(value,this.classList)"
@@ -32,29 +51,22 @@ function renderMemeEditor(imgId) {
         onpaste    = "this.onchange()"
         oninput    = "this.onchange()"/>
         <div class="move-between-lines border">
-            <button class="move-up" onclick="moveLine(1)">⬆</button>
             <button class="switch" onclick="switchLines()">🔄</button>
-            <button class="move-down" onclick="moveLine(-1)">⬇</button>
             <button class="add" onclick="addLine()">➕</button>
             <button class="delete" onclick="deleteLine()">🚮</button>
         </div>
         <section class="text-edits flex space-between">
             <button class="font-size-up" onclick="sizeChange(1)">🗚</button>
             <button class="font-size-down" onclick="sizeChange(-1)">🗛</button>
-            <button class="ltl">
-            <i class="fa-solid fa-align-left"></i>
-            </button>
-            <button class="center-text">☰</button>
-            <button class="rtl">rtl</button>
-            <div class="text-attr flex">
-            <select name="fonts" list="fonts" class="fonts" onchange=("changeFont(this.value)")>
+            
+            <select name="fonts" list="fonts" class="fonts" onchange="changeFont(this.value)">
                 <option value="Impact">Impact</option>
                 <option value="Arial">Arial</option>
                 <option value="comics-sans">comics-sans</option>
             </select>
             <button class="under-line">_</button>
-            <input type="color" id="fontColor" name="fontColor" value="#fdffff" onchange   = "setColor(value)"/>
-            </div>
+            <input class="color-choice"type="color" id="fontColor" name="fontColor" value="#ff0000" onchange   = "setColor(value)"/>
+           
         </section>
         <section class="upload-download flex">
         <button class="btn" onclick="uploadImg()">
@@ -73,16 +85,16 @@ function generateRandomMeme() {
     var img = getImgs()
     var lines = getRanSentences()
     var randomInt = getRandomInt(1, lines.length)
-    console.log(lines[randomInt])
     var randomMemeNum = getRandomInt(1, img.length)
     renderMemeEditor(randomMemeNum)
     var meme = getMeme()
-    meme.lines.txt[0] = lines[randomInt]
+    meme.lines[0].txt = lines[randomInt]
+    console.log(meme.lines[0].txt)
     var lineCount = getRandomInt(1, 3)
     if (lineCount === 2) {
         addLine()
         randomInt = getRandomInt(1, lines.length)
-        meme.lines.txt[1] = lines[randomInt]
+        meme.lines[1].txt = lines[randomInt]
     }
 }
 function setTxt(value, elClass) {
@@ -93,17 +105,14 @@ function setColor(value) {
     setMemeColor(value)
 }
 function addLine() {
-    // var elEdits = document.querySelector(".edits")
-    // var str
-    // str =
-    //     `<input type="text" class="meme-second-text" name="meme-text" placeholder="text"
-    // onchange   = "setTxt(value,this.classList)"
-    // onkeypress = "this.onchange()"
-    // onpaste    = "this.onchange()"
-    // oninput    = "this.onchange()"/>` + elEdits.innerHTML
-    // elEdits.innerHTML = str
     gLineCounter++
     addTxt(gLineCounter)
+}
+function inlargeText(el) {
+    console.log(el)
+    var keywords = getKeywords()
+    keywords[el.innerText]++
+    renderGallery()
 }
 
 function addListeners() {
@@ -117,15 +126,15 @@ function addListeners() {
 }
 
 function addMouseListeners() {
-    // elCanvas.addEventListener("mousemove", onMove)
-    var elCanvas = document.querySelector("canvas")
+    var elCanvas = document.querySelector(".main-canvas")
+    elCanvas.addEventListener("mousemove", onMove)
     elCanvas.addEventListener("mousedown", onDown)
-    // elCanvas.addEventListener("mouseup", onUp)
+    elCanvas.addEventListener("mouseup", onUp)
 }
 
 function addTouchListeners() {
-    // elCanvas.addEventListener("touchmove", onMove)
-    var elCanvas = document.querySelector("canvas")
+    var elCanvas = document.querySelector(".main-canvas")
+    elCanvas.addEventListener("touchmove", onMove)
     elCanvas.addEventListener("touchstart", onDown)
     // for later use
     // window.addEventListener('click', function(e){
@@ -135,18 +144,37 @@ function addTouchListeners() {
     //       // Clicked outside the box
     //     }
     //   })
-    // elCanvas.addEventListener("touchend", onUp)
+    elCanvas.addEventListener("touchend", onUp)
 }
 function onDown(ev) {
     //Get the ev pos from mouse or touch
     const pos = getEvPos(ev)
     checkClickPos(pos)
     // if (!isCircleClicked(pos)) return
-    // setCircleDrag(true)
     //Save the pos we start from
-    // gStartPos = pos
-    // document.body.style.cursor = "grabbing"
+    gStartPos = pos
+
     // checkClick()
+}
+function onMove(ev) {
+    const meme = getMeme()
+    var drag = getDrag()
+    console.log("checking darg", drag)
+    if (drag) {
+        const pos = getEvPos(ev)
+        //Calc the delta , the diff we moved
+        const dx = pos.x - gStartPos.x
+        const dy = pos.y - gStartPos.y
+        moveFocused(dx, dy)
+        //Save the last pos , we remember where we`ve been and move accordingly
+        gStartPos = pos
+        //The canvas is render again after every move
+        drawImgFromlocal()
+    }
+}
+function onUp() {
+    setDrag(false)
+    // document.body.style.cursor = "grab"
 }
 
 function getEvPos(ev) {
@@ -205,5 +233,14 @@ function getDownloadStatus() {
     return gDownLoad
 }
 function changeFont(value) {
-    console.log(value)
+    changeFontFamily(value)
+}
+
+function setTextDirection(direction) {}
+
+function setSearch(value) {
+    // gSearchKey = value
+
+    renderPhotos()
+    setKeywords(value)
 }
