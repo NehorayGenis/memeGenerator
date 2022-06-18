@@ -15,6 +15,6 @@
 }
 .photos {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
     gap: 1em;
 }
