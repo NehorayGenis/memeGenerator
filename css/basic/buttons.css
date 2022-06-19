@@ -119,3 +119,17 @@
     background-color: #ebeef3;
     background-image: linear-gradient(-38deg, #cf1d37 0%, #cf1d37 1%, #f05036 100%);
 }
+/* ask why dosent it work */
+.option {
+    width: 100%;
+    background-color: #015d33;
+}
+
+.emoji {
+    padding: 1rem;
+    box-shadow: 1px 5px 0 #4e5d01, inset 0 5px 0 rgba(255, 255, 255, 0.58);
+    background-color: #ebeef3;
+    background-image: linear-gradient(-38deg, #ebe542 0%, #a0b337 100%);
+    margin: 0px 10px;
+    border-radius: 5px;
+}

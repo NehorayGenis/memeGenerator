@@ -1,52 +1,58 @@
-"use strict"
-const gTouchEvs = ["touchstart", "touchmove", "touchend"]
+'use strict'
+const gTouchEvs = ['touchstart', 'touchmove', 'touchend']
 var gLineCounter = 0
-var gDownLoad = false
+var gSavedMemes = []
 var gSearchKey
 var gStartPos
 function renderGallery() {
-    var str = ""
-    var elRender = document.querySelector(".renderable")
-    var imgs = getImgs(gSearchKey)
-    var elSearch = document.querySelector(".searches")
-    elSearch.style.display = "flex"
-    str = `
+  resetMeme()
+  var str = ''
+  var elRender = document.querySelector('.renderable')
+  var imgs = getImgs(gSearchKey)
+  var elSearch = document.querySelector('.searches')
+  elSearch.style.display = 'flex'
+  str = `
     
     <section class="photos">`
-    imgs.forEach((img) => {
-        str += `<img src="img/${img.id}.jpg" alt="meme no ${img.id}" class="meme" onclick="renderMemeEditor(${img.id})"/>`
-    })
+  imgs.forEach((img) => {
+    str += `<img src="img/${img.id}.jpg" alt="meme no ${img.id}" class="meme meme-${img.id}" onclick="renderMemeEditor(${img.id}) "/>`
+  })
 
-    str += `
+  str += `
     </section>
     `
-    paintKeywords()
-    elRender.innerHTML = str
+  paintKeywords()
+  elRender.innerHTML = str
 }
 function renderPhotos() {
-    var elRender = document.querySelector(".photos")
-
-    var imgs = getImgs()
-    var str = ``
-    imgs.forEach((img) => {
-        str += `<img src="img/${img.id}.jpg" alt="meme no ${img.id}" class="meme" onclick="renderMemeEditor(${img.id})"/>`
-    })
-    elRender.innerHTML = str
+  var elRender = document.querySelector('.photos')
+  var imgs = getImgs()
+  var str = ``
+  imgs.forEach((img) => {
+    img.src = `img/${img.id}.jpg`
+    console.log(img)
+    str += `<img src="img/${img.id}.jpg" alt="meme no ${img.id}" class="meme meme-${img.id}" onclick="renderMemeEditor(${img.id})"/>`
+  })
+  elRender.innerHTML = str
 }
 function renderMemeEditor(imgId) {
-    var elSearch = document.querySelector(".searches")
-    elSearch.style.display = "none"
-    // var elCanvas = document.querySelector(".search-canvas")
-    // elCanvas.style.display = "none"
-    setMeme(imgId)
-    var str = ""
-    var elRender = document.querySelector(".renderable")
-    str = `            
+  var elSearch = document.querySelector('.searches')
+  elSearch.style.display = 'none'
+  setMeme(imgId)
+  setEditorHtml()
+  addListeners()
+  setCanvasSize()
+  drawImgFromlocal()
+}
+function setEditorHtml() {
+  var str = ''
+  var elRender = document.querySelector('.renderable')
+  str = `            
     <section class="meme-editor flex">
     <canvas class="main-canvas" id="canvas" height="500" width="500" style="border: 1px solid black" >Your browser does not support Canvas.</canvas>
     <section class="edits flex">
         <input type="text" class="meme-text" name="meme-text" placeholder="text"
-        onchange   = "setTxt(value,this.classList)"
+        onchange   = "setTxt(value)"
         onkeypress = "this.onchange()"
         onpaste    = "this.onchange()"
         oninput    = "this.onchange()"/>
@@ -64,183 +70,172 @@ function renderMemeEditor(imgId) {
                 <option value="Arial">Arial</option>
                 <option value="comics-sans">comics-sans</option>
             </select>
-            <button class="under-line">_</button>
             <input class="color-choice"type="color" id="fontColor" name="fontColor" value="#ff0000" onchange   = "setColor(value)"/>
            
         </section>
+        <div class="emojis flex">
+            <h3 class="emoji" onclick="addEmoji(this)">❤</h3>
+            <h3 class="emoji" onclick="addEmoji(this)">😆</h3>
+            <h3 class="emoji" onclick="addEmoji(this)">😂</h3>
+            <h3 class="emoji" onclick="addEmoji(this)">🎶</h3>
+            <h3 class="emoji" onclick="addEmoji(this)">🐱‍🏍</h3>
+        </div>
         <section class="upload-download flex">
         <button class="btn" onclick="uploadImg()">
         Upload Image
       </button>
             <div class="share-container flex"></div>
             <a href="#" class="download flex" onclick="downloadImg(this)" download="my-img.jpg">Download</a>
-        </section>
-    </section>
+            </section>
+            <a href="#" class="save flex" onclick="saveMeme()" >Save</a>
+            </section>
 </section>`
-    elRender.innerHTML = str
-    addListeners()
-    drawImgFromlocal()
+  elRender.innerHTML = str
+}
+function addEmoji(el) {
+  setEmoji(el.innerText)
 }
 function generateRandomMeme() {
-    var img = getImgs()
-    var lines = getRanSentences()
-    var randomInt = getRandomInt(1, lines.length)
-    var randomMemeNum = getRandomInt(1, img.length)
-    renderMemeEditor(randomMemeNum)
-    var meme = getMeme()
-    meme.lines[0].txt = lines[randomInt]
-    console.log(meme.lines[0].txt)
-    var lineCount = getRandomInt(1, 3)
-    if (lineCount === 2) {
-        addLine()
-        randomInt = getRandomInt(1, lines.length)
-        meme.lines[1].txt = lines[randomInt]
-    }
+  resetMeme()
+  var img = getImgs()
+  var lines = getRanSentences()
+  var randomInt = getRandomInt(1, lines.length)
+  var randomMemeNum = getRandomInt(1, img.length)
+  renderMemeEditor(randomMemeNum)
+  var meme = getMeme()
+  meme.lines[0].txt = lines[randomInt]
+  var lineCount = getRandomInt(1, 3)
+  if (lineCount === 2) {
+    addLine()
+    randomInt = getRandomInt(1, lines.length)
+    meme.lines[1].txt = lines[randomInt]
+  }
 }
-function setTxt(value, elClass) {
-    setMemeTxt(value, elClass.value)
+function setTxt(value) {
+  setMemeTxt(value)
 }
 
 function setColor(value) {
-    setMemeColor(value)
+  setMemeColor(value)
 }
 function addLine() {
-    gLineCounter++
-    addTxt(gLineCounter)
+  gLineCounter++
+  addTxt(gLineCounter)
 }
 function inlargeText(el) {
-    console.log(el)
-    var keywords = getKeywords()
-    keywords[el.innerText]++
-    renderGallery()
+  var keywords = getKeywords()
+  keywords[el.innerText]++
+  renderGallery()
 }
 
 function addListeners() {
-    addMouseListeners()
-    addTouchListeners()
-    //Listen for resize ev
-    // window.addEventListener("resize", () => {
-    //     resizeCanvas()
-    //     renderCanvas()
-    // })
+  addMouseListeners()
+  addTouchListeners()
 }
 
 function addMouseListeners() {
-    var elCanvas = document.querySelector(".main-canvas")
-    elCanvas.addEventListener("mousemove", onMove)
-    elCanvas.addEventListener("mousedown", onDown)
-    elCanvas.addEventListener("mouseup", onUp)
+  var elCanvas = document.querySelector('.main-canvas')
+  elCanvas.addEventListener('mousemove', onMove)
+  elCanvas.addEventListener('mousedown', onDown)
+  elCanvas.addEventListener('mouseup', onUp)
 }
 
 function addTouchListeners() {
-    var elCanvas = document.querySelector(".main-canvas")
-    elCanvas.addEventListener("touchmove", onMove)
-    elCanvas.addEventListener("touchstart", onDown)
-    // for later use
-    // window.addEventListener('click', function(e){
-    //     if (document.getElementById('clickbox').contains(e.target)){
-    //       // Clicked in box
-    //     } else{
-    //       // Clicked outside the box
-    //     }
-    //   })
-    elCanvas.addEventListener("touchend", onUp)
+  var elCanvas = document.querySelector('.main-canvas')
+  elCanvas.addEventListener('touchmove', onMove)
+  elCanvas.addEventListener('touchstart', onDown)
+  elCanvas.addEventListener('touchend', onUp)
 }
 function onDown(ev) {
-    //Get the ev pos from mouse or touch
-    const pos = getEvPos(ev)
-    checkClickPos(pos)
-    // if (!isCircleClicked(pos)) return
-    //Save the pos we start from
-    gStartPos = pos
-
-    // checkClick()
+  //Get the ev pos from mouse or touch
+  const pos = getEvPos(ev)
+  checkClickPos(pos)
+  //Save the pos we start from
+  gStartPos = pos
 }
 function onMove(ev) {
-    const meme = getMeme()
-    var drag = getDrag()
-    console.log("checking darg", drag)
-    if (drag) {
-        const pos = getEvPos(ev)
-        //Calc the delta , the diff we moved
-        const dx = pos.x - gStartPos.x
-        const dy = pos.y - gStartPos.y
-        moveFocused(dx, dy)
-        //Save the last pos , we remember where we`ve been and move accordingly
-        gStartPos = pos
-        //The canvas is render again after every move
-        drawImgFromlocal()
-    }
+  const meme = getMeme()
+  var drag = getDrag()
+  if (drag) {
+    const pos = getEvPos(ev)
+    //Calc the delta , the diff we moved
+    const dx = pos.x - gStartPos.x
+    const dy = pos.y - gStartPos.y
+    moveFocused(dx, dy)
+    //Save the last pos , we remember where we`ve been and move accordingly
+    gStartPos = pos
+    //The canvas is render again after every move
+    drawImgFromlocal()
+  }
 }
 function onUp() {
-    setDrag(false)
-    // document.body.style.cursor = "grab"
+  setDrag(false)
 }
 
 function getEvPos(ev) {
-    //Gets the offset pos , the default pos
-    var pos = {
-        x: ev.offsetX,
-        y: ev.offsetY,
+  //Gets the offset pos , the default pos
+  var pos = {
+    x: ev.offsetX,
+    y: ev.offsetY,
+  }
+  // Check if its a touch ev
+  if (gTouchEvs.includes(ev.type)) {
+    //soo we will not trigger the mouse ev
+    ev.preventDefault()
+    //Gets the first touch point
+    ev = ev.changedTouches[0]
+    //Calc the right pos according to the touch screen
+    pos = {
+      x: ev.pageX - ev.target.offsetLeft - ev.target.clientLeft,
+      y: ev.pageY - ev.target.offsetTop - ev.target.clientTop,
     }
-    // Check if its a touch ev
-    if (gTouchEvs.includes(ev.type)) {
-        //soo we will not trigger the mouse ev
-        ev.preventDefault()
-        //Gets the first touch point
-        ev = ev.changedTouches[0]
-        //Calc the right pos according to the touch screen
-        pos = {
-            x: ev.pageX - ev.target.offsetLeft - ev.target.clientLeft,
-            y: ev.pageY - ev.target.offsetTop - ev.target.clientTop,
-        }
-    }
-    return pos
+  }
+  return pos
 }
 
 function moveLine(idx) {
-    updatePixelsMoved(idx)
+  updatePixelsMoved(idx)
 }
 function deleteLine() {
-    removeLine()
+  removeLine()
 }
 function switchLines() {
-    switchFocus()
+  switchFocus()
 }
 
 function resetInput() {
-    var elInput = document.querySelector(".meme-text")
-    elInput.value = ""
+  var elInput = document.querySelector('.meme-text')
+  elInput.value = ''
 }
 
 function sizeChange(num) {
-    changeFontSize(num)
+  changeFontSize(num)
 }
 
 function downloadImg(elLink) {
-    gDownLoad = true
-
-    drawImgFromlocal()
-    var canvas = getCanvas()
-    var imgContent = canvas.toDataURL("image/jpeg") // image/jpeg the default format
-    elLink.href = imgContent
-    setTimeout(() => {
-        gDownLoad = false
-    }, 5000)
+  drawImgFromlocal()
+  var canvas = getCanvas()
+  var imgContent = canvas.toDataURL('image/jpeg') // image/jpeg the default format
+  elLink.href = imgContent
 }
-
-function getDownloadStatus() {
-    return gDownLoad
+function saveMeme() {
+  var focusedIdx = getFocusedIdx()
+  var meme = getMeme()
+  gFocusedIdx = meme.lines.length + 1
+  drawImgFromlocal()
+  setTimeout(() => {
+    gSavedMemes.push(meme)
+    saveToStorage('savedMemes', gSavedMemes)
+    console.log('saved')
+  }, 300)
 }
 function changeFont(value) {
-    changeFontFamily(value)
+  changeFontFamily(value)
 }
 
 function setTextDirection(direction) {}
 
 function setSearch(value) {
-    // gSearchKey = value
-
-    renderPhotos()
-    setKeywords(value)
+  renderPhotos()
+  setKeywords(value)
 }

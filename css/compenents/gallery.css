@@ -1,20 +1,25 @@
 .meme {
-    height: 200px;
-    width: 200px;
+    height: 150px;
+    width: 150px;
 }
 .options {
     justify-content: flex-end;
     letter-spacing: 2px;
 }
-.about {
-    margin-right: 18vw;
-    margin-left: 2vw;
-}
+
 .gallery {
     padding: 0px;
 }
 .photos {
+    margin: auto;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
-    gap: 1em;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-gap: 10px;
+    width: 100vw;
+    margin: auto;
+}
+.photos > * {
+    padding: 5px;
+    margin: 5px;
+    box-shadow: 1px 5px 10px #011112, inset 0 5px 10px rgba(121, 121, 121, 0.58);
 }

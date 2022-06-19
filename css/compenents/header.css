@@ -5,16 +5,23 @@ header {
     margin-bottom: 20px;
 }
 .logo {
-    padding-left: 9vw;
+    padding-left: 4vw;
+}
+nav > * {
+    margin-left: 2vw;
+}
+nav {
+    width: 90vw;
 }
 header div {
     width: 98vw;
     margin: auto;
     font-family: Poppins;
 }
-.flexiable {
+nav div > * {
     margin-left: 1rem;
 }
-.flexiable:hover {
+
+nav div > *:hover {
     cursor: pointer;
 }

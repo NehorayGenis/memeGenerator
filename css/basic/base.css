@@ -1,6 +1,8 @@
 .searches {
     display: flex;
     flex-direction: row;
+    width: 92vw;
+    margin: auto;
 }
 .searches > * {
     width: 70%;

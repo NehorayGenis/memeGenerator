@@ -11,10 +11,10 @@
     header > * {
         margin: auto;
     }
-    .logo,
-    .about {
-        padding: 0px;
+    .logo {
+        margin: auto;
     }
+
     .about {
         margin: 0px;
     }
@@ -43,5 +43,14 @@
     }
     .download {
         width: 35vw;
+    }
+    .searches {
+        flex-direction: column;
+    }
+    .searches > * {
+        width: 100%;
+    }
+    nav div > * {
+        margin-left: 0px;
     }
 }

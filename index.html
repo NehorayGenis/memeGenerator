@@ -14,23 +14,26 @@
         />
         <link rel="stylesheet" href="css/style.css" />
     </head>
-    <!-- onload="renderGallery()" -->
     <body onload="renderGallery()">
         <header class="flex space-between">
-            <h1 class="logo">logo</h1>
-            <div class="options flex">
-                <h1 class="gallery" onclick="renderGallery()">gallery</h1>
-                <h1 class="flexiable" onclick="generateRandomMeme()">i'm flexiable</h1>
-                <h1 class="about">about</h1>
-            </div>
+            <nav class="flex space-between">
+                <h1 class="logo">Meme Generator</h1>
+                <div class="options flex">
+                    <h1 class="gallery" onclick="renderGallery()">gallery</h1>
+                    <h1 class="flexiable" onclick="generateRandomMeme()">i'm flexiable</h1>
+                    <h1 class="saved" onclick="loadSavedMemes()">saved</h1>
+                    <h1 class="about">about</h1>
+                </div>
+            </nav>
         </header>
+
         <div class="searches flex">
             <input
                 type="text"
                 class="search-word"
                 name="search-word"
                 list="search-word"
-                placeholder="funny"
+                placeholder="🔍 funny"
                 onchange="setSearch(value)"
                 onkeypress="this.onchange()"
                 onpaste="this.onchange()"
@@ -38,7 +41,7 @@
                 autocomplete="off"
             />
             <datalist id="search-word">
-                <option>funny</option>
+                <option class="option">funny</option>
                 <option>cat</option>
                 <option>baby</option>
                 <option>politics</option>
@@ -53,6 +56,7 @@
             <div class="spans"></div>
         </div>
         <section class="renderable"></section>
+        <script src="js/saved-services.js"></script>
         <script src="js/util-services.js"></script>
         <script src="js/memesSentences.js"></script>
         <script src="js/upload-service.js"></script>
@@ -61,13 +65,3 @@
         <script src="main-controller.js"></script>
     </body>
 </html>
-<!-- for later use -->
-<!-- <input type="text" id="tag-search" name="tag-search" placeholder="Search" />
-    <div class="tags">
-        <h3 class="tag" onclick="sizeUp(this)">tag</h3>
-        <h3 class="tag" onclick="sizeUp(this)">tag</h3>
-        <h3 class="tag" onclick="sizeUp(this)">tag</h3>
-        <h3 class="tag" onclick="sizeUp(this)">tag</h3>
-        <h3 class="tag" onclick="sizeUp(this)">tag</h3>
-        <h3 class="tag" onclick="sizeUp(this)">tag</h3>
-    </div> -->

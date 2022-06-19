@@ -1,4 +1,22 @@
-var gKeywordSearchCountMap = { funny: 12, cat: 16, baby: 2, politics: 4, crazy: 3, weird: 1, movie: 6, cute: 3, shows: 7, gestures: 8, point: 7 }
+var gKeywordSearchCountMap = {
+    funny: 12,
+    cat: 16,
+    baby: 2,
+    politics: 4,
+    crazy: 3,
+    weird: 1,
+    movie: 6,
+    cute: 3,
+    shows: 7,
+    gestures: 8,
+    point: 7,
+    rip: 2,
+    thinking: 2,
+    sad: 3,
+    classic: 4,
+    old: 1,
+    weird: 4,
+}
 var gImgs = []
 setImgs()
 function setImgs() {
@@ -20,6 +38,14 @@ function setImgs() {
     gImgs.push({ id: 16, url: `img/16.jpg`, keywords: ["movie", "gestures"] })
     gImgs.push({ id: 17, url: `img/17.jpg`, keywords: ["politics", "funny"] })
     gImgs.push({ id: 18, url: `img/18.jpg`, keywords: ["movie", "cute"] })
+    gImgs.push({ id: 19, url: `img/19.jpg`, keywords: ["funny", "weird"] })
+    gImgs.push({ id: 20, url: `img/20.jpg`, keywords: ["classic", "thinking"] })
+    gImgs.push({ id: 21, url: `img/21.jpg`, keywords: ["old", "shows"] })
+    gImgs.push({ id: 22, url: `img/22.jpg`, keywords: ["crazy", "animal"] })
+    gImgs.push({ id: 23, url: `img/23.jpg`, keywords: ["shows", "funny"] })
+    gImgs.push({ id: 24, url: `img/24.jpg`, keywords: ["shows", "rip"] })
+    gImgs.push({ id: 25, url: `img/25.jpg`, keywords: ["cat", "sad"] })
+    gImgs.push({ id: 26, url: `img/26.jpg`, keywords: ["dog", "thinking"] })
 }
 var gMeme = {
     selectedImgId: 5,
@@ -27,7 +53,6 @@ var gMeme = {
     lines: [
         {
             txt: "I sometimes eat Falafel",
-            // focusedIdx:-1,
             size: 20,
             align: "left",
             color: "red",
@@ -41,8 +66,27 @@ var gMeme = {
 function setMeme(id) {
     gMeme.selectedImgId = id
 }
-function setMemeTxt(value, el) {
+function resetMeme() {
+    gMeme = {
+        selectedImgId: 5,
+        selectedLineIdx: 0,
+        lines: [
+            {
+                txt: "I sometimes eat Falafel",
+                size: 20,
+                align: "left",
+                color: "red",
+                font: "Impact",
+                x: 250,
+                y: 60,
+                movedPixels: 0,
+            },
+        ],
+    }
+}
+function setMemeTxt(value) {
     var idx = getFocusedIdx()
+    if (value.split("").length > 60) return
     gMeme.lines[idx].txt = value
     drawImgFromlocal()
 }
@@ -76,8 +120,6 @@ function addTxt(idx = gMeme.lines[0].txt.length === 0 ? 0 : 1) {
             movedPixels: 0,
         })
     }
-    // var focusedIdx = getFocusedIdx()
-    // focusedIdx++
     drawImgFromlocal()
 }
 function setKeywords(value) {
@@ -98,13 +140,25 @@ function getImgs(value) {
         return gImgs
     }
     var sortedImgs = gImgs.filter((img) => {
-        return img.keywords.includes(sortKey.value)
+        return img.keywords[0].includes(sortKey.value) || img.keywords[1].includes(sortKey.value)
     })
     if (sortedImgs.length === 0) return gImgs
     paintKeywords()
     return sortedImgs
 }
-
+function setEmoji(value) {
+    gMeme.lines.push({
+        txt: value,
+        size: 20,
+        align: "left",
+        color: "red",
+        font: "Impact",
+        x: 50,
+        y: 50,
+        movedPixels: 0,
+    })
+    drawImgFromlocal()
+}
 function removeLine() {
     var idx = getFocusedIdx()
     gMeme.lines.splice(idx, 1)
